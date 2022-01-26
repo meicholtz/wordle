@@ -23,12 +23,18 @@ ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'  # valid letters to guess
 parser = argparse.ArgumentParser(description="Play Wordle in Python!")
 parser.add_argument('-ai', metavar='filename', type=str, help='name of AI file containing makeguess function')
 parser.add_argument('--version', action='version', version=utils.getversion())
+parser.add_argument('--fast', action='store_true', help='speed up the game (only for AI)')
+parser.add_argument('--practice', action='store_false', help='do not track stats for this game')
 
 
 def main(args):
     # Setup
     init(autoreset=True)  # required for colored text
     random.seed()  # use current system time for randomness
+    if args.fast:
+        delay = 0
+    else:
+        delay = 1
 
     # Load AI player (if provided)
     ai = args.ai
@@ -55,10 +61,10 @@ def main(args):
         outcome = play(secret, wordlist)
     else:  # ai player
         secret = random.choice(secretwordlist)  # random selection of the secret word
-        outcome = watch(secret, wordlist, ai)
+        outcome = watch(secret, wordlist, ai, delay)
 
     # Update statistics file
-    if outcome != -1:  # only update if user didn't quit
+    if outcome != -1 and args.practice:  # only update if user didn't quit
         utils.updatestats(outcome)
 
 
@@ -171,7 +177,7 @@ def play(secret, wordlist):
             return -1
 
 
-def watch(secret, wordlist, ai):
+def watch(secret, wordlist, ai, delay=1):
     """Play Wordle using a secret word, a list of acceptable guesses, and an AI player.
 
     Parameters
@@ -182,6 +188,8 @@ def watch(secret, wordlist, ai):
         List of strings comprising valid guesses during the game.
     ai : module
         AI player module that must include a function called makeguess.
+    delay : float, optional
+        Number of seconds to wait between guesses. Default is 1.
     """
     printtitle()
     printword(remaining=ALPHABET)
@@ -195,7 +203,7 @@ def watch(secret, wordlist, ai):
         guesses.append(guess)
         
         printword(guesses[-1], remaining=leftovers)
-        time.sleep(1)
+        time.sleep(delay)
 
         if guesses[-1] not in wordlist:
             print(Fore.RED + "Not in word list", end='')
