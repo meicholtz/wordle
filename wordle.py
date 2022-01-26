@@ -33,32 +33,41 @@ def main(args):
     # Load AI player (if provided)
     ai = args.ai
     if ai is not None:
-        print("Loading AI player...")
+        print("Loading AI player...", end="")
         try:
             ai = importlib.import_module(ai.split('.')[0])  # split removes extension if provided
         except ImportError:
-            print(Fore.RED + f"\tERROR: Cannot import AI player from file ({ai})")
+            print(Fore.RED + f"\n\tERROR: Cannot import AI player from file ({ai})")
             return 0
 
         if not hasattr(ai, 'makeguess'):
-            print(Fore.RED + f"\tERROR: This AI player does not have a 'makeguess' function")
+            print(Fore.RED + f"\n\tERROR: This AI player does not have a 'makeguess' function")
             return 0
+        print("done")
 
     # Read word lists from file
     wordlist = utils.readwords(ALLWORDS)
     secretwordlist = utils.readwords(SECRETWORDS)
 
     # Play the game
-    secret = random.choice(secretwordlist)  # random selection of the secret word
-    outcome = play(secret, wordlist)
-    
+    if ai is None:  # human player
+        secret = random.choice(secretwordlist)  # random selection of the secret word
+        outcome = play(secret, wordlist)
+    else:  # ai player
+        secret = random.choice(secretwordlist)  # random selection of the secret word
+        outcome = watch(secret, wordlist, ai)
+
+    # Update statistics file
+    if outcome != -1:  # only update if user didn't quit
+        utils.updatestats(outcome)
+
 
 def printtitle():
     """Show the header for the game."""
     print()
     print('  WORDLE')
     print('=' * 10, end=" ")
-    print("Remaining Letters")
+    print("Remaining Letters...")
 
 
 def printword(word='', feedback=[], remaining=''):
@@ -109,11 +118,7 @@ def play(secret, wordlist):
     leftovers = ALPHABET  # remaining letters
     gameover = False
     while not gameover:
-        if False:
-            word = makeguess(guesses, feedback, wordlist)
-        else:
-            key = utils.getkey()
-
+        key = utils.getkey()
         if key in ALPHABET and len(guesses[-1]) < NUMLETTERS:  # add letter to current word
             guesses[-1] += key
             printword(guesses[-1], remaining=leftovers)
@@ -164,6 +169,62 @@ def play(secret, wordlist):
             gameover = True
             print("\nThanks for playing.")
             return -1
+
+
+def watch(secret, wordlist, ai):
+    """Play Wordle using a secret word, a list of acceptable guesses, and an AI player.
+
+    Parameters
+    ----------
+    secret : str
+        Word that the player is attempting to guess.
+    wordlist : list of str
+        List of strings comprising valid guesses during the game.
+    ai : module
+        AI player module that must include a function called makeguess.
+    """
+    printtitle()
+    printword(remaining=ALPHABET)
+
+    guesses, feedback = [], []  # known information
+    leftovers = ALPHABET  # remaining letters
+    gameover = False
+    while not gameover:
+        # Ask AI player for next guess
+        guess = ai.makeguess(wordlist, guesses, feedback)
+        guesses.append(guess)
+        
+        printword(guesses[-1], remaining=leftovers)
+        time.sleep(1)
+
+        if guesses[-1] not in wordlist:
+            print(Fore.RED + "Not in word list", end='')
+            print('\nThanks for playing')
+            return -1
+        else:
+            # Check guess
+            f = utils.getfeedback(guesses[-1], secret)
+            feedback.append(f)
+
+            # Show feedback as colored text
+            printword(guesses[-1], feedback[-1], leftovers)
+
+            # Check endgame conditions
+            if sum(f) == NUMLETTERS * 2:
+                gameover = True
+                msg = ["Genius", "Magnificent", "Impressive", "Splendid", "Great", "Phew"]
+                print(Fore.CYAN + '\n' + msg[len(guesses) - 1])
+                Style.RESET_ALL
+                return len(guesses)
+            elif len(guesses) == 6:
+                gameover = True
+                print(Fore.RED + f'\nGAME OVER: The correct word was {secret}')
+                Style.RESET_ALL
+                return 0
+            else:
+                # Start new guess
+                print()
+                leftovers = utils.removeletters(leftovers, guesses[-1], feedback[-1])
 
 
 if __name__ == "__main__":

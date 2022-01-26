@@ -4,6 +4,7 @@
 # Author: Matthew Eicholtz
 # Inspired by: https://www.powerlanguage.co.uk/wordle/
 
+from colorama import Fore
 import os
 import pdb
 from pynput import keyboard
@@ -155,6 +156,47 @@ def test():
     print('Press any key...')
     key = getkey()
     print(key)
+
+
+def updatestats(outcome, filename="stats.txt"):
+    """Update statistics file based on the outcome of a game."""
+    # Try to read data from file
+    try:
+        with open(filename, "r") as f:
+            data = f.read().split('\n')  # make list of strings, one per stat line
+    except IOError:
+        print(Fore.YELLOW + f'WARNING: Unable to track stats because {filename} does not exist.')
+        return 0
+
+    # Load stats into dictionary
+    stats = {}
+    for line in data:
+        if len(line) == 0:
+            continue
+        stat, value = line.split('=')
+        try:
+            stats[stat] = int(value)
+        except:  # need something special for lists
+            stats[stat] = [int(i) for i in value.split(',')]
+    
+    # Modify stats based on outcome
+    stats['played'] += 1
+    if outcome != 0:
+        stats['current streak'] += 1
+        if stats['current streak'] > stats['max streak']:
+            stats['max streak'] = stats['current streak']
+        stats['guess distribution'][outcome - 1] += 1
+    else:
+        stats['current streak'] = 0
+    stats['win percentage'] = int(sum(stats['guess distribution']) / stats['played'] * 100)
+
+    # Write new stats to file
+    with open(filename, "w") as f:
+        for key, value in stats.items():
+            if isinstance(value, list):
+                f.write(f'{key}={",".join([str(i) for i in value])}\n')
+            else:
+                f.write(f'{key}={value}\n')
 
 
 if __name__ == "__main__":
