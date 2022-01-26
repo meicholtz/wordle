@@ -7,6 +7,7 @@
 import os
 import pdb
 from pynput import keyboard
+import subprocess
 
 
 def getfeedback(guess, secret):
@@ -78,6 +79,11 @@ def getkey(debug=False):
                 
                 if debug:
                     print(event.key)
+
+
+def getversion():
+    """Retrieve the current git hash to use as a 'version' number."""
+    return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
 
 
 def readwords(file, header=True, sep='\n'):
