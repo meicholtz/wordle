@@ -112,6 +112,30 @@ def readwords(file, header=True, sep='\n'):
     return words
 
 
+def removeletters(alphabet, guess, feedback):
+    """Remove letters from the known alphabet using feedback about a guessed word.
+    
+    Parameters
+    ----------
+    alphabet : str
+        String of letters that are currently valid.
+    guess : str
+        Word that was guessed.
+    feedback: list
+        A list of integers, one per letter in the guessed word, to indicate if the letter 
+        is correct (2), almost correct (1), or incorrect (0).
+
+    Returns
+    -------
+    leftovers: str
+        String of remaining letters after discarding those guessed with feedback=0.
+    """
+    used = set([letter for letter, exists in zip(guess, feedback) if exists == 0])
+    leftovers = "".join([letter for letter in alphabet if letter not in used])
+
+    return leftovers
+                    
+
 def test():
     """Test utility functions for errors."""
     print('\nREADWORDS')

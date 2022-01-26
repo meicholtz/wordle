@@ -1,10 +1,12 @@
-# wordle_cli.py 
-# Command-line interface version of Wordle.
+# wordle.py 
+# Command-line interface version of Wordle powered by Python.
 #
 # Author: Matthew Eicholtz
 # Inspired by: https://www.powerlanguage.co.uk/wordle/
 
+import argparse
 from colorama import init, Fore, Style
+import importlib
 import os
 import pdb
 import random
@@ -17,14 +19,30 @@ ALLWORDS = os.path.join(ROOT, "allwords5.txt")
 MAXATTEMPTS = 6  # how many total guesses are allowed?
 NUMLETTERS = 5  # how many letters in the word?
 ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'  # valid letters to guess
-AI = False  # play with AI?
+
+parser = argparse.ArgumentParser(description="Play Wordle in Python!")
+parser.add_argument('-ai', metavar='filename', type=str, help='name of AI file containing makeguess function')
+parser.add_argument('--version', action='version', version=utils.getversion())
 
 
-def main():
-    """Play game as many times as the user wants."""
+def main(args):
     # Setup
     init(autoreset=True)  # required for colored text
     random.seed()  # use current system time for randomness
+
+    # Load AI player (if provided)
+    ai = args.ai
+    if ai is not None:
+        print("Loading AI player...")
+        try:
+            ai = importlib.import_module(ai.split('.')[0])  # split removes extension if provided
+        except ImportError:
+            print(Fore.RED + f"\tERROR: Cannot import AI player from file ({ai})")
+            return 0
+
+        if not hasattr(ai, 'makeguess'):
+            print(Fore.RED + f"\tERROR: This AI player does not have a 'makeguess' function")
+            return 0
 
     # Read word lists from file
     wordlist = utils.readwords(ALLWORDS)
@@ -39,10 +57,11 @@ def printtitle():
     """Show the header for the game."""
     print()
     print('  WORDLE')
-    print('=' * 10)
+    print('=' * 10, end=" ")
+    print("Remaining Letters")
 
 
-def printword(word='', feedback=[]):
+def printword(word='', feedback=[], remaining=''):
     """Print a word, leaving blanks for missing letters.
 
     Parameters
@@ -53,6 +72,9 @@ def printword(word='', feedback=[]):
         A list of integers, one per letter in the word, to indicate if the letter is correct (2),
         almost correct (1), or incorrect (0). If provided, the feedback affects the color of each
         printed letter. Default is an empty list (no feedback to show).
+    remaining : str, optional
+        String containing the remaining letters that could be in the word.
+        By default, this argument is empty.
     """
     print('\r', end='')  # move the cursor to the left of the line
     if len(feedback) == 0:  # show the word as the user is typing it
@@ -67,6 +89,7 @@ def printword(word='', feedback=[]):
             elif feedback[i] == 0:  # incorrect
                 print(Fore.WHITE + word[i] + ' ', end='')
         Style.RESET_ALL
+    print(' ' + remaining, end=' ')
 
 
 def play(secret, wordlist):
@@ -80,20 +103,23 @@ def play(secret, wordlist):
         List of strings comprising valid guesses during the game.
     """
     printtitle()
-    printword()
+    printword(remaining=ALPHABET)
+
     guesses, feedback = [''], []  # known information
+    leftovers = ALPHABET  # remaining letters
     gameover = False
     while not gameover:
-        if AI:
-            word = makeguess()
+        if False:
+            word = makeguess(guesses, feedback, wordlist)
         else:
             key = utils.getkey()
+
         if key in ALPHABET and len(guesses[-1]) < NUMLETTERS:  # add letter to current word
             guesses[-1] += key
-            printword(guesses[-1])
+            printword(guesses[-1], remaining=leftovers)
         elif key == 'backspace':  # erase a letter
             guesses[-1] = guesses[-1][:-1]
-            printword(guesses[-1])
+            printword(guesses[-1], remaining=leftovers)
         elif key == 'enter':  # submit word if finished
             if len(guesses[-1]) < NUMLETTERS:
                 msg = "Not enough letters"
@@ -113,31 +139,32 @@ def play(secret, wordlist):
                 feedback.append(f)
 
                 # Show feedback as colored text
-                printword(guesses[-1], feedback[-1])
+                printword(guesses[-1], feedback[-1], leftovers)
 
                 # Check endgame conditions
                 if sum(f) == NUMLETTERS * 2:
                     gameover = True
                     msg = ["Genius", "Magnificent", "Impressive", "Splendid", "Great", "Phew"]
-                    print(Fore.CYAN + msg[len(guesses) - 1])
+                    print(Fore.CYAN + '\n' + msg[len(guesses) - 1])
                     Style.RESET_ALL
                     return len(guesses)
                 elif len(guesses) == 6:
                     gameover = True
-                    print(Fore.RED + f'GAME OVER: The correct word was {secret}')
+                    print(Fore.RED + f'\nGAME OVER: The correct word was {secret}')
                     Style.RESET_ALL
                     return 0
                 else:
                     # Start new guess
                     print()
+                    leftovers = utils.removeletters(leftovers, guesses[-1], feedback[-1])
                     guesses.append('')
-                    printword(guesses[-1])
+                    printword(guesses[-1], remaining=leftovers)
 
         elif key == 'esc':  # quit game
             gameover = True
-            print("Thanks for playing.")
+            print("\nThanks for playing.")
             return -1
 
 
 if __name__ == "__main__":
-    main()
+    main(parser.parse_args())
