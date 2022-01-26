@@ -50,6 +50,30 @@ In addition, the instructions that follow assume you have properly installed git
 
 ## Usage
 
-To play Wordle, simply use the command:
+Use the following commands to play the game:
 
-    $ python wordle.py
+- To play Wordle as a human player,
+
+        $ python wordle.py
+
+- To play Wordle using an AI player,
+
+        $ python wordle.py -ai ai_player
+
+    where ai_player is the name of any file that contains the function `makeguess(wordlist, guesses, feedback)`. As an example, the most basic AI player (i.e. random guessing) is provided in the file ai_dummy.py. To use that AI player,
+
+        $ python wordle.py -ai ai_dummy
+
+There are several additional optional parameters that can be passed to wordle.py.
+
+- If you want to speed up gameplay when using an AI player, use
+
+        $ python wordle.py -ai ai_player --fast
+
+- If you do ***not*** want to track statistics when playing the game (see stats.txt), use
+
+        $ python wordle.py --practice
+
+    or
+
+        $ python wordle.py -ai ai_player --practice
