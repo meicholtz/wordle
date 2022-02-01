@@ -59,7 +59,6 @@ def main(args):
     # Play the game
     if ai is None:  # human player
         secret = random.choice(secretwordlist)  # random selection of the secret word
-        secret = "ROOTS"
         outcome = play(secret, wordlist)
             
         # Update statistics file
@@ -68,8 +67,6 @@ def main(args):
     else:  # ai player
         for i in range(args.n):
             secret = random.choice(secretwordlist)  # random selection of the secret word
-            secret = "THOSE"
-            # secret = "LIGHT"
             outcome = watch(secret, wordlist, ai, delay)
 
             # Update statistics file
