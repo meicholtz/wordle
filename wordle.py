@@ -22,9 +22,10 @@ ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'  # valid letters to guess
 
 parser = argparse.ArgumentParser(description="Play Wordle in Python!")
 parser.add_argument('-ai', metavar='filename', type=str, help='name of AI file containing makeguess function')
-parser.add_argument('--version', action='version', version=utils.getversion())
-parser.add_argument('--fast', action='store_true', help='speed up the game (only for AI)')
+parser.add_argument('-n', metavar='numgames', type=int, help='number of games (AI only)', default=1)
+parser.add_argument('--fast', action='store_true', help='speed up the game (AI only)')
 parser.add_argument('--practice', action='store_false', help='do not track stats for this game')
+parser.add_argument('--version', action='version', version=utils.getversion())
 
 
 def main(args):
@@ -58,14 +59,22 @@ def main(args):
     # Play the game
     if ai is None:  # human player
         secret = random.choice(secretwordlist)  # random selection of the secret word
+        secret = "ROOTS"
         outcome = play(secret, wordlist)
+            
+        # Update statistics file
+        if outcome != -1 and args.practice:  # only update if user didn't quit
+            utils.updatestats(outcome)
     else:  # ai player
-        secret = random.choice(secretwordlist)  # random selection of the secret word
-        outcome = watch(secret, wordlist, ai, delay)
+        for i in range(args.n):
+            secret = random.choice(secretwordlist)  # random selection of the secret word
+            secret = "THOSE"
+            # secret = "LIGHT"
+            outcome = watch(secret, wordlist, ai, delay)
 
-    # Update statistics file
-    if outcome != -1 and args.practice:  # only update if user didn't quit
-        utils.updatestats(outcome)
+            # Update statistics file
+            if outcome != -1 and args.practice:  # only update if user didn't quit
+                utils.updatestats(outcome)
 
 
 def printtitle():
