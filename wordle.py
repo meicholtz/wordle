@@ -29,7 +29,7 @@ parser.add_argument('--stats', '-s', metavar='filename', type=str, help='name of
 parser.add_argument('--fast', action='store_true', help='flag to speed up the game (AI only)')
 parser.add_argument('--superfast', action='store_true', help='flag to eliminate any printed display during the game (AI only)')
 parser.add_argument('--playall', action='store_true', help="flag to play all possible secret words")
-parser.add_argument('--practice', action='store_false', help='flag to not track stats for this game')
+parser.add_argument('--practice', action='store_true', help='flag to not track stats for this game')
 parser.add_argument('--daily', action='store_true', help="flag to play today's Wordle")
 parser.add_argument('--version', action='version', version=utils.getversion())
 
@@ -91,11 +91,12 @@ def main(args):
             outcome = watch(secret, wordlist, ai, delay, verbose=not args.superfast)
         
         # Update statistics file
-        if outcome != -1 and args.practice:  # only update if user didn't quit
+        if outcome != -1 and not args.practice:  # only update if user didn't quit
             utils.updatestats(outcome, filename=args.stats)
 
     # Show updated stats
-    check_stats.main(args.stats)
+    if not args.practice:
+        check_stats.main(args.stats)
 
 def printtitle():
     """Show the header for the game."""
