@@ -20,8 +20,13 @@ def main():
     print("\nSTATISTICS")
     print("=" * 10)
     for line in data:
+        if len(line) == 0:  # take care of blank lines (often happens at end of file)
+            continue
         stat, value = line.split('=')  # expected format is "stat=value"
         print(f'{stat.title()}: {value}')
+    guesses = [int(i) for i in value.split(',')]
+    mean_guess = sum([(i + 1) * x for i, x in enumerate(guesses)]) / sum(guesses)
+    print(f"Average Number of Guesses to Solve: {mean_guess:0.2f}")
     print()
     # pdb.set_trace()
 

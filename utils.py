@@ -179,6 +179,13 @@ def updatestats(outcome, filename="stats.txt"):
         except:  # need something special for lists
             stats[stat] = [int(i) for i in value.split(',')]
     
+    # Validate dictionary
+    minstats = ['played', 'win percentage', 'current streak', 'max streak', 'guess distribution']
+    if set(minstats) > set(stats.keys()):
+        print(Fore.YELLOW + f'WARNING: {filename} does not contain the correct stats. Resetting file now.')
+        stats = dict.fromkeys(minstats, 0)
+        stats['guess distribution'] = [0] * 6
+    
     # Modify stats based on outcome
     stats['played'] += 1
     if outcome != 0:
