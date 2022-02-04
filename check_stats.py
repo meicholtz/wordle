@@ -9,15 +9,15 @@ parser = argparse.ArgumentParser(description="Check your Wordle stats")
 parser.add_argument('--filename', '-f', metavar='f', type=str, help='name of stats file to load, defaults to stats.txt', default='stats.txt')
 
 
-def main(args):
+def main(filename):
     init(autoreset=True)  # required for colored text
 
     # Read data from stats file
     try:
-        with open(args.filename, "r") as f:
+        with open(filename, "r") as f:
             data = f.read().split('\n')  # make list of strings, one per stat line
     except IOError:
-        print(Fore.RED + 'ERROR: {args.filename} does not exist. Check files in directory.')
+        print(Fore.RED + 'ERROR: {filename} does not exist. Check files in directory.')
         return 0
 
     # Display stats
@@ -36,4 +36,5 @@ def main(args):
 
 
 if __name__ == "__main__":
-    main(parser.parse_args())
+    args = parser.parse_args()
+    main(filename=args.filename)

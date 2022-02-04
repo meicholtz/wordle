@@ -5,6 +5,7 @@
 # Inspired by: https://www.powerlanguage.co.uk/wordle/
 
 import argparse
+import check_stats
 from colorama import init, Fore, Style
 import importlib
 import os
@@ -26,6 +27,7 @@ parser.add_argument('-n', metavar='numgames', type=int, help='number of games to
 parser.add_argument('--seed', metavar='s', type=int, help='seed for random number generation, defaults to system time')
 parser.add_argument('--stats', '-s', metavar='filename', type=str, help='name of stats file, defaults to stats.txt', default='stats.txt')
 parser.add_argument('--fast', action='store_true', help='flag to speed up the game (AI only)')
+parser.add_argument('--superfast', action='store_true', help='flag to eliminate any printed display during the game (AI only)')
 parser.add_argument('--practice', action='store_false', help='flag to not track stats for this game')
 parser.add_argument('--daily', action='store_true', help="flag to play today's Wordle")
 parser.add_argument('--version', action='version', version=utils.getversion())
@@ -59,6 +61,7 @@ def main(args):
             print(Fore.RED + f"\n\tERROR: This AI player does not have a 'makeguess' function")
             return 0
         print("done")
+        print("Playing games...")
 
     # Read word lists from file
     wordlist = utils.readwords(ALLWORDS)
@@ -76,12 +79,14 @@ def main(args):
         if ai is None:  # human player
             outcome = play(secret, wordlist)
         else:
-            outcome = watch(secret, wordlist, ai, delay)
+            outcome = watch(secret, wordlist, ai, delay, verbose=not args.superfast)
         
         # Update statistics file
         if outcome != -1 and args.practice:  # only update if user didn't quit
             utils.updatestats(outcome, filename=args.stats)
 
+    # Show updated stats
+    check_stats.main(args.stats)
 
 def printtitle():
     """Show the header for the game."""
@@ -192,7 +197,7 @@ def play(secret, wordlist):
             return -1
 
 
-def watch(secret, wordlist, ai, delay=1):
+def watch(secret, wordlist, ai, delay=1, verbose=True):
     """Play Wordle using a secret word, a list of acceptable guesses, and an AI player.
 
     Parameters
@@ -206,8 +211,9 @@ def watch(secret, wordlist, ai, delay=1):
     delay : float, optional
         Number of seconds to wait between guesses. Default is 1.
     """
-    printtitle()
-    printword(remaining=ALPHABET)
+    if verbose:
+        printtitle()
+        printword(remaining=ALPHABET)
 
     guesses, feedback = [], []  # known information
     leftovers = ALPHABET  # remaining letters
@@ -217,12 +223,14 @@ def watch(secret, wordlist, ai, delay=1):
         guess = ai.makeguess(wordlist, guesses, feedback)
         guesses.append(guess)
         
-        printword(guesses[-1], remaining=leftovers)
-        time.sleep(delay)
+        if verbose:
+            printword(guesses[-1], remaining=leftovers)
+            time.sleep(delay)
 
         if guesses[-1] not in wordlist:
-            print(Fore.RED + "Not in word list", end='')
-            print('\nThanks for playing')
+            if verbose:
+                print(Fore.RED + "Not in word list", end='')
+                print('\nThanks for playing')
             return -1
         else:
             # Check guess
@@ -230,23 +238,27 @@ def watch(secret, wordlist, ai, delay=1):
             feedback.append(f)
 
             # Show feedback as colored text
-            printword(guesses[-1], feedback[-1], leftovers)
+            if verbose:
+                printword(guesses[-1], feedback[-1], leftovers)
 
             # Check endgame conditions
             if sum(f) == NUMLETTERS * 2:
                 gameover = True
-                msg = ["Genius", "Magnificent", "Impressive", "Splendid", "Great", "Phew"]
-                print(Fore.CYAN + '\n' + msg[len(guesses) - 1])
-                Style.RESET_ALL
+                if verbose:
+                    msg = ["Genius", "Magnificent", "Impressive", "Splendid", "Great", "Phew"]
+                    print(Fore.CYAN + '\n' + msg[len(guesses) - 1])
+                    Style.RESET_ALL
                 return len(guesses)
             elif len(guesses) == 6:
                 gameover = True
-                print(Fore.RED + f'\nGAME OVER: The correct word was {secret}')
-                Style.RESET_ALL
+                if verbose:
+                    print(Fore.RED + f'\nGAME OVER: The correct word was {secret}')
+                    Style.RESET_ALL
                 return 0
             else:
                 # Start new guess
-                print()
+                if verbose:
+                    print()
                 leftovers = utils.removeletters(leftovers, guesses[-1], feedback[-1])
 
 
