@@ -1,19 +1,23 @@
 # check_stats.py
 # Simple script to read and display stats from file.
 
+import argparse
 from colorama import init, Fore
 import pdb
 
+parser = argparse.ArgumentParser(description="Check your Wordle stats")
+parser.add_argument('--filename', '-f', metavar='f', type=str, help='name of stats file to load, defaults to stats.txt', default='stats.txt')
 
-def main():
+
+def main(args):
     init(autoreset=True)  # required for colored text
 
     # Read data from stats file
     try:
-        with open("stats.txt", "r") as f:
+        with open(args.filename, "r") as f:
             data = f.read().split('\n')  # make list of strings, one per stat line
     except IOError:
-        print(Fore.RED + 'ERROR: stats.txt does not exist. Check files in directory.')
+        print(Fore.RED + 'ERROR: {args.filename} does not exist. Check files in directory.')
         return 0
 
     # Display stats
@@ -32,4 +36,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(parser.parse_args())

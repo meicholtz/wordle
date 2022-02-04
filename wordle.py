@@ -25,8 +25,8 @@ parser.add_argument('-ai', metavar='filename', type=str, help='name of AI file c
 parser.add_argument('-n', metavar='numgames', type=int, help='number of games (AI only)', default=1)
 parser.add_argument('--fast', action='store_true', help='flag to speed up the game (AI only)')
 parser.add_argument('--practice', action='store_false', help='flag to not track stats for this game')
-parser.add_argument('--seed', '-s', metavar='s', type=int, help='seed for random number generation, defaults to system time')
-parser.add_argument('--stats', metavar='filename', type=str, help='name of stats file to save/update, defaults to stats.txt', default='stats.txt')
+parser.add_argument('--seed', metavar='s', type=int, help='seed for random number generation, defaults to system time')
+parser.add_argument('--stats', '-s', metavar='filename', type=str, help='name of stats file to save/update, defaults to stats.txt', default='stats.txt')
 parser.add_argument('--version', action='version', version=utils.getversion())
 
 
