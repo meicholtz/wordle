@@ -23,15 +23,21 @@ ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'  # valid letters to guess
 parser = argparse.ArgumentParser(description="Play Wordle in Python!")
 parser.add_argument('-ai', metavar='filename', type=str, help='name of AI file containing makeguess function')
 parser.add_argument('-n', metavar='numgames', type=int, help='number of games (AI only)', default=1)
-parser.add_argument('--fast', action='store_true', help='speed up the game (AI only)')
-parser.add_argument('--practice', action='store_false', help='do not track stats for this game')
+parser.add_argument('--fast', action='store_true', help='flag to speed up the game (AI only)')
+parser.add_argument('--practice', action='store_false', help='flag to not track stats for this game')
+parser.add_argument('--seed', '-s', metavar='s', type=int, help='seed for random number generation, defaults to system time')
 parser.add_argument('--version', action='version', version=utils.getversion())
 
 
 def main(args):
     # Setup
     init(autoreset=True)  # required for colored text
-    random.seed()  # use current system time for randomness
+
+    if args.seed is None:
+        random.seed()  # use current system time for randomness
+    else:
+        random.seed(args.seed)  # use seed provided by user
+    
     if args.fast:
         delay = 0
     else:
