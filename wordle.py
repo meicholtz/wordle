@@ -28,6 +28,7 @@ parser.add_argument('--seed', metavar='s', type=int, help='seed for random numbe
 parser.add_argument('--stats', '-s', metavar='filename', type=str, help='name of stats file, defaults to stats.txt', default='stats.txt')
 parser.add_argument('--fast', action='store_true', help='flag to speed up the game (AI only)')
 parser.add_argument('--superfast', action='store_true', help='flag to eliminate any printed display during the game (AI only)')
+parser.add_argument('--playall', action='store_true', help="flag to play all possible secret words")
 parser.add_argument('--practice', action='store_false', help='flag to not track stats for this game')
 parser.add_argument('--daily', action='store_true', help="flag to play today's Wordle")
 parser.add_argument('--version', action='version', version=utils.getversion())
@@ -47,6 +48,10 @@ def main(args):
     else:
         delay = 1
 
+    if args.playall and (args.daily or args.n > 1):
+        print(Fore.RED + f'ERROR: Invalid set of input arguments. Cannot set -n or --daily if using --playall.')
+        return 0
+    
     # Load AI player (if provided)
     ai = args.ai
     if ai is not None:
@@ -68,10 +73,14 @@ def main(args):
     secretwordlist = utils.readwords(SECRETWORDS)
 
     # Play the game
+    if args.playall:
+        args.n = len(secretwordlist)
     for i in range(args.n):
         # Set the secret word
         if args.daily:  # use the official word of the day
             secret = utils.getdailysecret()
+        elif args.playall:  # iterate through the entire secret word list
+            secret = secretwordlist[i]
         else:  # pick randomly
             secret = random.choice(secretwordlist)
         
