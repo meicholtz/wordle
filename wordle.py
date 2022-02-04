@@ -31,6 +31,7 @@ parser.add_argument('--superfast', action='store_true', help='flag to eliminate 
 parser.add_argument('--playall', action='store_true', help="flag to play all possible secret words")
 parser.add_argument('--practice', action='store_true', help='flag to not track stats for this game')
 parser.add_argument('--daily', action='store_true', help="flag to play today's Wordle")
+parser.add_argument('--showfails', action='store_true', help='flag to display the secret words that were missed after all games are complete')
 parser.add_argument('--version', action='version', version=utils.getversion())
 
 
@@ -73,6 +74,7 @@ def main(args):
     secretwordlist = utils.readwords(SECRETWORDS)
 
     # Play the game
+    failures = []  # keep track of which secret words were missed
     if args.playall:
         args.n = len(secretwordlist)
     for i in range(args.n):
@@ -87,16 +89,29 @@ def main(args):
         # Who is playing?
         if ai is None:  # human player
             outcome = play(secret, wordlist)
-        else:
+        else:  # AI player
             outcome = watch(secret, wordlist, ai, delay, verbose=not args.superfast)
         
+        # Was the word missed?
+        if outcome <= 0:
+            failures.append(secret)
+
         # Update statistics file
         if outcome != -1 and not args.practice:  # only update if user didn't quit
             utils.updatestats(outcome, filename=args.stats)
 
-    # Show updated stats
+    # Show updated stats if not practicing
     if not args.practice:
         check_stats.main(args.stats)
+
+    # Show failed words, if requested
+    if args.showfails and len(failures) > 0:
+        print("\nFAILED WORDS")
+        print("=" * 12)
+        failures.sort()
+        print(*failures, sep='\n')
+        print()
+
 
 def printtitle():
     """Show the header for the game."""
