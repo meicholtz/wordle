@@ -12,6 +12,7 @@ import os
 import pdb
 import random
 import time
+from tqdm import tqdm
 import utils
 
 ROOT = os.path.dirname(os.path.realpath(__file__))
@@ -77,7 +78,7 @@ def main(args):
     failures = []  # keep track of which secret words were missed
     if args.playall:
         args.n = len(secretwordlist)
-    for i in range(args.n):
+    for i in tqdm(range(args.n)) if args.superfast else range(args.n):
         # Set the secret word
         if args.daily:  # use the official word of the day
             secret = utils.getdailysecret()

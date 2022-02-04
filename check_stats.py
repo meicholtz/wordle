@@ -31,7 +31,6 @@ def main(filename):
     guesses = [int(i) for i in value.split(',')]
     mean_guess = sum([(i + 1) * x for i, x in enumerate(guesses)]) / sum(guesses)
     print(f"Average Number of Guesses to Solve: {mean_guess:0.2f}")
-    print()
     # pdb.set_trace()
 
 
