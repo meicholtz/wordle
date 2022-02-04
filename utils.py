@@ -5,10 +5,32 @@
 # Inspired by: https://www.powerlanguage.co.uk/wordle/
 
 from colorama import Fore
+from datetime import datetime
 import os
 import pdb
 from pynput import keyboard
 import subprocess
+
+
+def getdailysecret():
+    """Find the official word of the day using an encrypted list of secret words."""
+    # Read words directly from file
+    f = open('dailysecret.txt', 'r')
+    key = int(f.readline())  # the first line is the key to a circular Caesar cipher
+    words = f.read().upper().split('\n')  # make list of encrypted words
+    f.close()
+
+    # Decrypt word for today
+    jan1 = datetime.strptime('2022-01-01', '%Y-%m-%d')
+    index = 196 + (datetime.today() - jan1).days  # 196 is the index of the word for January 1, 2022
+    secret = ''
+    for letter in words[index]:
+        shift = (ord(letter) - key)
+        if shift < ord('A'):
+            shift += 26
+        secret += chr(shift)
+    
+    return secret
 
 
 def getfeedback(guess, secret):

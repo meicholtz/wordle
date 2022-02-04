@@ -22,11 +22,12 @@ ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'  # valid letters to guess
 
 parser = argparse.ArgumentParser(description="Play Wordle in Python!")
 parser.add_argument('-ai', metavar='filename', type=str, help='name of AI file containing makeguess function')
-parser.add_argument('-n', metavar='numgames', type=int, help='number of games (AI only)', default=1)
+parser.add_argument('-n', metavar='numgames', type=int, help='number of games to play', default=1)
+parser.add_argument('--seed', metavar='s', type=int, help='seed for random number generation, defaults to system time')
+parser.add_argument('--stats', '-s', metavar='filename', type=str, help='name of stats file, defaults to stats.txt', default='stats.txt')
 parser.add_argument('--fast', action='store_true', help='flag to speed up the game (AI only)')
 parser.add_argument('--practice', action='store_false', help='flag to not track stats for this game')
-parser.add_argument('--seed', metavar='s', type=int, help='seed for random number generation, defaults to system time')
-parser.add_argument('--stats', '-s', metavar='filename', type=str, help='name of stats file to save/update, defaults to stats.txt', default='stats.txt')
+parser.add_argument('--daily', action='store_true', help="flag to play today's Wordle")
 parser.add_argument('--version', action='version', version=utils.getversion())
 
 
@@ -64,21 +65,22 @@ def main(args):
     secretwordlist = utils.readwords(SECRETWORDS)
 
     # Play the game
-    if ai is None:  # human player
-        secret = random.choice(secretwordlist)  # random selection of the secret word
-        outcome = play(secret, wordlist)
-            
+    for i in range(args.n):
+        # Set the secret word
+        if args.daily:  # use the official word of the day
+            secret = utils.getdailysecret()
+        else:  # pick randomly
+            secret = random.choice(secretwordlist)
+        
+        # Who is playing?
+        if ai is None:  # human player
+            outcome = play(secret, wordlist)
+        else:
+            outcome = watch(secret, wordlist, ai, delay)
+        
         # Update statistics file
         if outcome != -1 and args.practice:  # only update if user didn't quit
             utils.updatestats(outcome, filename=args.stats)
-    else:  # ai player
-        for i in range(args.n):
-            secret = random.choice(secretwordlist)  # random selection of the secret word
-            outcome = watch(secret, wordlist, ai, delay)
-
-            # Update statistics file
-            if outcome != -1 and args.practice:  # only update if user didn't quit
-                utils.updatestats(outcome, filename=args.stats)
 
 
 def printtitle():
