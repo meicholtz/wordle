@@ -160,18 +160,22 @@ def test():
 
 def updatestats(outcome, filename="stats.txt"):
     """Update statistics file based on the outcome of a game."""
+    # Force input filename to be a .txt file if extension not provided
+    if '.' not in filename:
+        filename = filename + '.txt'
+
     # Try to read data from file
     try:
         with open(filename, "r") as f:
             data = f.read().split('\n')  # make list of strings, one per stat line
     except IOError:
-        print(Fore.YELLOW + f'WARNING: Unable to track stats because {filename} does not exist.')
-        return 0
+        print(Fore.YELLOW + f'WARNING: Unable to track stats because {filename} does not exist. Creating file now.')
+        data = []
 
     # Load stats into dictionary
     stats = {}
     for line in data:
-        if len(line) == 0:
+        if len(line) == 0:  # take care of blank lines (often happens at end of file)
             continue
         stat, value = line.split('=')
         try:

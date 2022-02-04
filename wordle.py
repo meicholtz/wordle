@@ -26,6 +26,7 @@ parser.add_argument('-n', metavar='numgames', type=int, help='number of games (A
 parser.add_argument('--fast', action='store_true', help='flag to speed up the game (AI only)')
 parser.add_argument('--practice', action='store_false', help='flag to not track stats for this game')
 parser.add_argument('--seed', '-s', metavar='s', type=int, help='seed for random number generation, defaults to system time')
+parser.add_argument('--stats', metavar='filename', type=str, help='name of stats file to save/update, defaults to stats.txt', default='stats.txt')
 parser.add_argument('--version', action='version', version=utils.getversion())
 
 
@@ -69,7 +70,7 @@ def main(args):
             
         # Update statistics file
         if outcome != -1 and args.practice:  # only update if user didn't quit
-            utils.updatestats(outcome)
+            utils.updatestats(outcome, filename=args.stats)
     else:  # ai player
         for i in range(args.n):
             secret = random.choice(secretwordlist)  # random selection of the secret word
@@ -77,7 +78,7 @@ def main(args):
 
             # Update statistics file
             if outcome != -1 and args.practice:  # only update if user didn't quit
-                utils.updatestats(outcome)
+                utils.updatestats(outcome, filename=args.stats)
 
 
 def printtitle():
