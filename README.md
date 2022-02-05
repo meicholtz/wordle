@@ -11,6 +11,7 @@ The code provided here was developed in Python 3.9.5 on Windows 10 using VS Code
 - colorama
 - pynput
 - six
+- tqdm
 
 In addition, the instructions that follow assume you have properly installed git on your machine. Click [here](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) if you need help doing that.
 
