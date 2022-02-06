@@ -25,6 +25,7 @@ ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'  # valid letters to guess
 parser = argparse.ArgumentParser(description="Play Wordle in Python!")
 parser.add_argument('-ai', metavar='filename', type=str, help='name of AI file containing makeguess function')
 parser.add_argument('-n', metavar='numgames', type=int, help='number of games to play', default=1)
+parser.add_argument('--secret', metavar='word', type=str, help='hardcoded secret word to test')
 parser.add_argument('--seed', metavar='s', type=int, help='seed for random number generation, defaults to system time')
 parser.add_argument('--stats', '-s', metavar='filename', type=str, help='name of stats file, defaults to stats.txt', default='stats.txt')
 parser.add_argument('--fast', action='store_true', help='flag to speed up the game (AI only)')
@@ -49,6 +50,10 @@ def main(args):
         delay = 0
     else:
         delay = 1
+
+    if args.secret is not None and (len(args.secret) != 5 or len(set(args.secret.upper()) - set(ALPHABET)) != 0):
+        print(Fore.RED + f'ERROR: Invalid input argument for --secret. Must be a 5-letter word.')
+        return 0
 
     if args.playall and (args.daily or args.n > 1):
         print(Fore.RED + f'ERROR: Invalid set of input arguments. Cannot set -n or --daily if using --playall.')
@@ -80,7 +85,9 @@ def main(args):
         args.n = len(secretwordlist)
     for i in tqdm(range(args.n)) if args.superfast else range(args.n):
         # Set the secret word
-        if args.daily:  # use the official word of the day
+        if args.secret is not None:  # use the word provided by the user
+            secret = args.secret.upper()
+        elif args.daily:  # use the official word of the day
             secret = utils.getdailysecret()
         elif args.playall:  # iterate through the entire secret word list
             secret = secretwordlist[i]
