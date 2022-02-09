@@ -202,8 +202,11 @@ def updatestats(outcome, filename="stats.txt"):
         stat, value = line.split('=')
         try:
             stats[stat] = int(value)
-        except:  # need something special for lists
-            stats[stat] = [int(i) for i in value.split(',')]
+        except:  # need something special for floats and lists
+            try:
+                stats[stat] = float(value)
+            except:
+                stats[stat] = [int(i) for i in value.split(',')]
     
     # Validate dictionary
     minstats = ['played', 'win percentage', 'current streak', 'max streak', 'guess distribution']
@@ -221,13 +224,15 @@ def updatestats(outcome, filename="stats.txt"):
         stats['guess distribution'][outcome - 1] += 1
     else:
         stats['current streak'] = 0
-    stats['win percentage'] = int(sum(stats['guess distribution']) / stats['played'] * 100)
-
+    stats['win percentage'] = sum(stats['guess distribution']) / stats['played'] * 100
+    
     # Write new stats to file
     with open(filename, "w") as f:
         for key, value in stats.items():
             if isinstance(value, list):
                 f.write(f'{key}={",".join([str(i) for i in value])}\n')
+            elif isinstance(value, float):
+                f.write(f'{key}={value:0.3f}\n')
             else:
                 f.write(f'{key}={value}\n')
 
