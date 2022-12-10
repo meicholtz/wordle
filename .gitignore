@@ -1,3 +1,6 @@
+# (TESTING) Try not to track ai*.py files
+ai*.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
