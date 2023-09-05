@@ -106,7 +106,12 @@ def getkey(debug=False):
 
 def getversion():
     """Retrieve the current git hash to use as a 'version' number."""
-    return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
+    try:
+        version = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
+    except:
+        version = 'WARNING: Could not access version of code using \'git rev-parse --short HEAD\' command'
+        
+    return version
 
 
 def readwords(file, header=True, sep='\n'):
