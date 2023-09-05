@@ -29,8 +29,10 @@ def main(filename):
         stat, value = line.split('=')  # expected format is "stat=value"
         print(f'{stat.title()}: {value}')
     guesses = [int(i) for i in value.split(',')]
-    mean_guess = sum([(i + 1) * x for i, x in enumerate(guesses)]) / sum(guesses)
-    print(f"Average Number of Guesses to Solve: {mean_guess:0.2f}")
+    if sum(guesses) != 0:  # the player has won at least one game
+        mean_guess = sum([(i + 1) * x for i, x in enumerate(guesses)]) / sum(guesses)
+        print(f"Average Number of Guesses to Solve: {mean_guess:0.2f}")
+
     # pdb.set_trace()
 
 
