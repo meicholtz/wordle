@@ -64,7 +64,7 @@ def main(args):
     if ai is not None:
         print("Loading AI player...", end="")
         try:
-            ai = importlib.import_module(ai.split('.')[0])  # split removes extension if provided
+            ai = importlib.import_module(ai.replace('.\\', '').split('.')[0])  # split removes extension if provided
         except ImportError:
             print(Fore.RED + f"\n\tERROR: Cannot import AI player from file ({ai})")
             return 0
