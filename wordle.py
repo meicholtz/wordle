@@ -98,7 +98,7 @@ def main(args):
         if ai is None:  # human player
             outcome = play(secret, wordlist)
         else:  # AI player
-            outcome = watch(secret, wordlist, ai, delay, verbose=not args.superfast)
+            outcome = watch(secret, wordlist.copy(), ai, delay, verbose=not args.superfast)
         
         # Was the word missed?
         if outcome <= 0:
